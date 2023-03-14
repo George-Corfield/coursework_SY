@@ -91,8 +91,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			validDetectives.add(currentDetective);
 
 		}
+		if (setup.moves.isEmpty()) throw new IllegalArgumentException();
+		if (setup.graph.nodes().isEmpty()) throw new IllegalArgumentException();
 		//TODO set up tests for setup variable then implement GameState once passed tests
-		//throw new RuntimeException("Implement me!");
 		return new MyGameState(setup,ImmutableSet.of(MrX.MRX),ImmutableList.of(),mrX,detectives );
 	}
 
