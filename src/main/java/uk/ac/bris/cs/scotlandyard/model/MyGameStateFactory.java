@@ -74,7 +74,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public ImmutableSet<Piece> getPlayers(){
-			return null;
+			List<Piece> players = List.of(this.mrX.piece());
+			for (int i = 0; i < this.detectives.size(); i++){
+				System.out.println(this.detectives.get(i).piece());
+				players.add(this.detectives.get(i).piece());
+			}
+			return ImmutableSet.copyOf(players);
+
 		}
 		@Override
 		public GameState advance(Move move){
