@@ -35,11 +35,42 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				final ImmutableList<LogEntry> log,
 				final Player mrX,
 				final List<Player> detectives){
-
+			validSetup(setup);
+			validMrX(mrX);
+			validDetectives(ImmutableList.copyOf(detectives));
+			this.setup = setup;
+			this.remaining = remaining;
+			this.log = log;
+			this.mrX = mrX;
+			this.detectives = detectives;
+		}
+		public void validMrX(Player mrX){
+			if(mrX == null) throw new NullPointerException();
+			if(!mrX.isMrX()) throw new IllegalArgumentException();
+		}
+		public void validDetectives(ImmutableList<Player> detectives){
+			if(detectives == null) throw new NullPointerException();
+			List<Player> validDetectives = new ArrayList<>();
+			for (int i = 0; i < detectives.size(); i++){
+				Player currentDetective = detectives.get(i);
+				if (currentDetective == null) throw new NullPointerException();
+				if (currentDetective.isMrX()) throw new IllegalArgumentException();
+				if (currentDetective.has(Ticket.SECRET) || currentDetective.has(Ticket.DOUBLE)) throw new IllegalArgumentException();
+				for (int j = 0; j < validDetectives.size(); j++){
+					Player validDetective = validDetectives.get(j);
+					if (currentDetective.piece().equals(validDetective.piece())) throw new IllegalArgumentException();
+					if (currentDetective.location() == validDetective.location()) throw new IllegalArgumentException();
+				}
+				validDetectives.add(currentDetective);
+			}
+		}
+		public void validSetup(GameSetup setup){
+			if (setup.moves.isEmpty()) throw new IllegalArgumentException();
+			if (setup.graph.nodes().isEmpty()) throw new IllegalArgumentException();
 		}
 		@Override
 		public GameSetup getSetup(){
-			return null;
+			return this.setup;
 		}
 		@Override
 		public ImmutableSet<Piece> getPlayers(){
@@ -51,15 +82,21 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public Optional<Integer> getDetectiveLocation(Detective detective){
-			return null;
+			for(int i=0; i < this.detectives.size();i++){
+				if (this.detectives.get(i).piece() == detective){
+					return Optional.of(this.detectives.get(i).location());
+				}
+			}
+			return Optional.empty();
 		}
 		@Override
 		public Optional<TicketBoard> getPlayerTickets(Piece piece){
-			return null;
+			if (piece == this.mrX.piece()) return null; // what is ticketBoard
+			return Optional.empty();
 		}
 		@Override
 		public ImmutableList<LogEntry> getMrXTravelLog(){
-			return null;
+			return this.log;
 		}
 		@Override
 		public ImmutableSet<Piece> getWinner(){
@@ -75,24 +112,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			GameSetup setup,
 			Player mrX,
 			ImmutableList<Player> detectives) {
-		if(mrX == null || detectives == null) throw new NullPointerException();
-		if(!mrX.isMrX()) throw new IllegalArgumentException();
-		List<Player> validDetectives = new ArrayList<>();
-		for (int i = 0; i < detectives.size(); i++){
-			Player currentDetective = detectives.get(i);
-			if (currentDetective == null) throw new NullPointerException();
-			if (currentDetective.isMrX()) throw new IllegalArgumentException();
-			if (currentDetective.has(Ticket.SECRET) || currentDetective.has(Ticket.DOUBLE)) throw new IllegalArgumentException();
-			for (int j = 0; j < validDetectives.size(); j++){
-				Player validDetective = validDetectives.get(j);
-				if (currentDetective.piece().equals(validDetective.piece())) throw new IllegalArgumentException();
-				if (currentDetective.location() == validDetective.location()) throw new IllegalArgumentException();
-			}
-			validDetectives.add(currentDetective);
-
-		}
-		if (setup.moves.isEmpty()) throw new IllegalArgumentException();
-		if (setup.graph.nodes().isEmpty()) throw new IllegalArgumentException();
 		//TODO set up tests for setup variable then implement GameState once passed tests
 		return new MyGameState(setup,ImmutableSet.of(MrX.MRX),ImmutableList.of(),mrX,detectives );
 	}
