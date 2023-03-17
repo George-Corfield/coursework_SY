@@ -167,8 +167,25 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					}
 				}
 			}
-			System.out.println(singleMoves);
 			return singleMoves;
+		}
+
+		private static Set<DoubleMove> makeDoubleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
+			Set<DoubleMove> doubleMoves = new HashSet<>();
+			Set<SingleMove> firstMoves = makeSingleMoves(setup,detectives,player,source);
+			for (SingleMove firstMove : firstMoves){
+				Set<SingleMove> secondMoves = makeSingleMoves(setup,detectives,player,firstMove.destination);
+				for (SingleMove secondMove : secondMoves){
+					DoubleMove move = new DoubleMove(player.piece(),
+							source,
+							firstMove.ticket,
+							firstMove.destination,
+							secondMove.ticket,
+							secondMove.destination);
+					doubleMoves.add(move);
+				}
+			}
+			return doubleMoves;
 		}
 	}
 
