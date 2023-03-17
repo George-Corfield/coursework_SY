@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.*;
 import javax.annotation.Nonnull;
+
+import org.checkerframework.checker.units.qual.A;
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
@@ -19,6 +21,18 @@ import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Factory;
  * Stage 1: Complete this class
  */
 public final class MyGameStateFactory implements Factory<GameState> {
+
+	private final class TicketBoard implements Board.TicketBoard{
+
+		private Player player;
+
+		private TicketBoard(Player player){
+			this.player = player;
+		}
+		public int getCount(Ticket ticket){
+			return this.player.tickets().get(ticket);
+		}
+	}
 
 	private final class MyGameState implements GameState{
 		private GameSetup setup;
@@ -74,9 +88,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public ImmutableSet<Piece> getPlayers(){
-			List<Piece> players = List.of(this.mrX.piece());
+			List<Piece> players = new ArrayList<>();
+			players.add(this.mrX.piece());
 			for (int i = 0; i < this.detectives.size(); i++){
-				System.out.println(this.detectives.get(i).piece());
 				players.add(this.detectives.get(i).piece());
 			}
 			return ImmutableSet.copyOf(players);
@@ -97,8 +111,20 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public Optional<TicketBoard> getPlayerTickets(Piece piece){
-			if (piece == this.mrX.piece()) return null; // what is ticketBoard
-			return Optional.empty();
+			if (this.getPlayers().contains(piece)){
+				if (piece == this.mrX.piece()) {
+					return Optional.of(new MyGameStateFactory.TicketBoard(this.mrX)); // what is ticketBoard
+				}
+				else {
+					for (int i = 0; i < this.detectives.size(); i++) {
+						if (piece == this.detectives.get(i).piece()) {
+							return Optional.of(new MyGameStateFactory.TicketBoard(this.detectives.get(i)));
+						}
+					}
+					return Optional.empty();
+				}
+			}
+			else return Optional.empty();
 		}
 		@Override
 		public ImmutableList<LogEntry> getMrXTravelLog(){
@@ -106,7 +132,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public ImmutableSet<Piece> getWinner(){
-			return null;
+			this.winner = ImmutableSet.of();
+			return this.winner;
 		}
 		@Override
 		public ImmutableSet<Move> getAvailableMoves(){
