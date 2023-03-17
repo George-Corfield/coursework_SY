@@ -1,6 +1,7 @@
 package uk.ac.bris.cs.scotlandyard.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.*;
 import javax.annotation.Nonnull;
@@ -137,9 +138,41 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public ImmutableSet<Move> getAvailableMoves(){
-			return null;
+			Set<Move> currentMoves = new HashSet<>();
+			//currentMoves.addAll(makeSingleMoves(this.setup,this.detectives,this.mrX,this.mrX.location()));
+			for (Player detective : this.detectives){
+				currentMoves.addAll(makeSingleMoves(this.setup,this.detectives,detective,detective.location()));
+			}
+
+			return ImmutableSet.copyOf(currentMoves);
+		}
+
+		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
+			Set<SingleMove> singleMoves = new HashSet<>();
+			for(int destination : setup.graph.adjacentNodes(source)) {
+				boolean occupied = false;
+				for (Player detective : detectives){
+					if (detective.location()==destination){
+						occupied = true;
+					}
+				}
+				if (!occupied){
+					for(Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of()) ) {
+						if (player.has(t.requiredTicket())){
+							singleMoves.add(new SingleMove(player.piece(),source,t.requiredTicket(),destination));
+							if (player.has(Ticket.SECRET)){
+								singleMoves.add(new SingleMove(player.piece(),source,Ticket.SECRET,destination));
+							}
+						}
+					}
+				}
+			}
+			System.out.println(singleMoves);
+			return singleMoves;
 		}
 	}
+
+
 
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
