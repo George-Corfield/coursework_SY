@@ -24,7 +24,7 @@ import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Factory;
 public final class MyGameStateFactory implements Factory<GameState> {
 
 	private final class TicketBoard implements Board.TicketBoard{
-
+	//
 		private Player player;
 
 		private TicketBoard(Player player){
@@ -58,6 +58,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.log = log;
 			this.mrX = mrX;
 			this.detectives = detectives;
+			this.moves = getAvailableMoves();
 		}
 		public void validMrX(Player mrX){
 			if(mrX == null) throw new NullPointerException();
@@ -89,16 +90,17 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public ImmutableSet<Piece> getPlayers(){
-			List<Piece> players = new ArrayList<>();
-			players.add(this.mrX.piece());
+			List<Piece> pieces = new ArrayList<>();
+			pieces.add(this.mrX.piece());
 			for (int i = 0; i < this.detectives.size(); i++){
-				players.add(this.detectives.get(i).piece());
+				pieces.add(this.detectives.get(i).piece());
 			}
-			return ImmutableSet.copyOf(players);
-
+			return ImmutableSet.copyOf(pieces);
 		}
 		@Override
 		public GameState advance(Move move){
+			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
+
 			return null;
 		}
 		@Override
@@ -122,10 +124,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 							return Optional.of(new MyGameStateFactory.TicketBoard(this.detectives.get(i)));
 						}
 					}
-					return Optional.empty();
 				}
 			}
-			else return Optional.empty();
+			return Optional.empty();
 		}
 		@Override
 		public ImmutableList<LogEntry> getMrXTravelLog(){
@@ -139,11 +140,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableSet<Move> getAvailableMoves(){
 			Set<Move> currentMoves = new HashSet<>();
-			//currentMoves.addAll(makeSingleMoves(this.setup,this.detectives,this.mrX,this.mrX.location()));
+			currentMoves.addAll(makeSingleMoves(this.setup,this.detectives,this.mrX,this.mrX.location()));
+			currentMoves.addAll(makeDoubleMoves(this.setup,this.detectives,this.mrX,this.mrX.location()));
 			for (Player detective : this.detectives){
 				currentMoves.addAll(makeSingleMoves(this.setup,this.detectives,detective,detective.location()));
 			}
-
 			return ImmutableSet.copyOf(currentMoves);
 		}
 
@@ -176,13 +177,16 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			for (SingleMove firstMove : firstMoves){
 				Set<SingleMove> secondMoves = makeSingleMoves(setup,detectives,player,firstMove.destination);
 				for (SingleMove secondMove : secondMoves){
-					DoubleMove move = new DoubleMove(player.piece(),
-							source,
-							firstMove.ticket,
-							firstMove.destination,
-							secondMove.ticket,
-							secondMove.destination);
-					doubleMoves.add(move);
+					if (!(secondMove.destination == source)){
+						DoubleMove move = new DoubleMove(player.piece(),
+								source,
+								firstMove.ticket,
+								firstMove.destination,
+								secondMove.ticket,
+								secondMove.destination);
+						doubleMoves.add(move);
+					}
+
 				}
 			}
 			return doubleMoves;
