@@ -220,9 +220,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					for(Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of()) ) {
 						if (player.has(t.requiredTicket())){
 							singleMoves.add(new SingleMove(player.piece(),source,t.requiredTicket(),destination));
-							if (player.has(Ticket.SECRET)){
-								singleMoves.add(new SingleMove(player.piece(),source,Ticket.SECRET,destination));
-							}
+						}
+						if (player.has(Ticket.SECRET)){
+							singleMoves.add(new SingleMove(player.piece(),source,Ticket.SECRET,destination));
 						}
 					}
 				}
@@ -234,7 +234,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			Set<DoubleMove> doubleMoves = new HashSet<>();
 			Set<SingleMove> firstMoves = makeSingleMoves(setup,detectives,player,source);
 			for (SingleMove firstMove : firstMoves){
-				Set<SingleMove> secondMoves = makeSingleMoves(setup,detectives,player,firstMove.destination);
+				Set<SingleMove> secondMoves = makeSingleMoves(setup,detectives,player.use(firstMove.ticket),firstMove.destination);
 				for (SingleMove secondMove : secondMoves){
 					DoubleMove move = new DoubleMove(player.piece(),
 								source,
