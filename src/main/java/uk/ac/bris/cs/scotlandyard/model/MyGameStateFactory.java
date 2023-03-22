@@ -127,15 +127,17 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					} else {
 						int detectiveIndex = getDetectivePieces().indexOf(move.commencedBy());
 						Player detective = detectives.get(detectiveIndex);
-						detective = detective.at(singleMove.destination);
 						detective = detective.use(singleMove.ticket);
+						detective = detective.at(singleMove.destination);
+						List<Player> newDetectives = new ArrayList<>(detectives);
+						newDetectives.set(detectiveIndex,detective);
 						mrX = mrX.give(singleMove.ticket);
 						List<Piece> remainingDetectives = new ArrayList<>(remaining);
 						remainingDetectives.remove(move.commencedBy());
 						if (remainingDetectives.isEmpty()) remainingDetectives = List.of(mrX.piece());
 						return new MyGameState(setup,
 								ImmutableSet.copyOf(remainingDetectives),
-								log, mrX, detectives);
+								log, mrX, newDetectives);
 					}
 
 				}
