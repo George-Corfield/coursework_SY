@@ -195,7 +195,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			Set<Move> currentMoves = new HashSet<>();
 			if (this.remaining.contains(this.mrX.piece())) {
 				currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
-				currentMoves.addAll(makeDoubleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
+				if (this.setup.moves.size() - this.log.size() >= 2){
+					currentMoves.addAll(makeDoubleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
+				}
 			} else {
 				for (Player detective : this.detectives) {
 					if (this.remaining.contains(detective.piece())) currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, detective, detective.location()));
@@ -234,16 +236,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			for (SingleMove firstMove : firstMoves){
 				Set<SingleMove> secondMoves = makeSingleMoves(setup,detectives,player,firstMove.destination);
 				for (SingleMove secondMove : secondMoves){
-					if (!(secondMove.destination == source)){
-						DoubleMove move = new DoubleMove(player.piece(),
+					DoubleMove move = new DoubleMove(player.piece(),
 								source,
 								firstMove.ticket,
 								firstMove.destination,
 								secondMove.ticket,
 								secondMove.destination);
-						doubleMoves.add(move);
-					}
-
+					doubleMoves.add(move);
 				}
 			}
 			return doubleMoves;
