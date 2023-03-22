@@ -124,15 +124,16 @@ public final class MyGameStateFactory implements Factory<GameState> {
 //						else {
 //							LogEntry logEntry = LogEntry.hidden(singleMove.ticket);
 //						}
-						List<LogEntry> logEntries = List.copyOf(log);
+						List<LogEntry> logEntries = new ArrayList<>(log);
+						//logEntries.addAll(log);
 						logEntries.add(setLog(singleMove.ticket,singleMove.destination, logEntries.size()));
 						mrX = mrX.use(singleMove.ticket);
 						mrX = mrX.at(singleMove.destination);
-						List remainingDetectives = getDetectivePieces();
+						List<Piece> remainingDetectives = getDetectivePieces();
 						System.out.println(remainingDetectives);
 						return new MyGameState(setup,
 								ImmutableSet.copyOf(remainingDetectives),
-								ImmutableList.copyOf(log),
+								ImmutableList.copyOf(logEntries),
 								mrX, detectives);
 					} else {
 						int detectiveIndex = getDetectivePieces().indexOf(move.commencedBy());
@@ -140,7 +141,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						detective = detective.at(singleMove.destination);
 						detective = detective.use(singleMove.ticket);
 						mrX = mrX.give(singleMove.ticket);
-						List<Piece> remainingDetectives = List.copyOf(remaining);
+						List<Piece> remainingDetectives = new ArrayList<>(remaining);
 						remainingDetectives.remove(move.commencedBy());
 						if (remainingDetectives.isEmpty()) remainingDetectives = List.of(mrX.piece());
 						System.out.println(remainingDetectives);
@@ -151,13 +152,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 				}
 				@Override public GameState visit(DoubleMove doubleMove){
-					List<LogEntry> logEntries = List.copyOf(log);
+					List<LogEntry> logEntries = new ArrayList<>(log);
 					logEntries.add(setLog(doubleMove.ticket1,doubleMove.destination1, logEntries.size()));
 					mrX = mrX.use(doubleMove.ticket1);
 					logEntries.add(setLog(doubleMove.ticket2,doubleMove.destination2, logEntries.size()));
 					mrX = mrX.use(doubleMove.ticket2);
 					mrX = mrX.at(doubleMove.destination2);
-					List remainingDetectives = getDetectivePieces();
+					List<Piece> remainingDetectives = getDetectivePieces();
 					System.out.println(remainingDetectives);
 					return new MyGameState(setup,
 							ImmutableSet.copyOf(remainingDetectives),
