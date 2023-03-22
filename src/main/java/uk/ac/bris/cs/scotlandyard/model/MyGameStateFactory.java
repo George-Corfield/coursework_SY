@@ -145,6 +145,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					mrX = mrX.use(doubleMove.ticket1);
 					logEntries.add(setLog(doubleMove.ticket2,doubleMove.destination2, logEntries.size()));
 					mrX = mrX.use(doubleMove.ticket2);
+					mrX = mrX.use(Ticket.DOUBLE);
 					mrX = mrX.at(doubleMove.destination2);
 					List<Piece> remainingDetectives = getDetectivePieces();
 					return new MyGameState(setup,
