@@ -115,22 +115,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			GameState nextGameState = move.accept(new Visitor<GameState>(){
 				@Override public GameState visit(SingleMove singleMove){
 					if (move.commencedBy() == mrX.piece()){
-						//List<LogEntry> logEntries = List.copyOf(log);
-						//System.out.println(setup.moves.get(log.size()));
-//						if (setup.moves.get(log.size())){
-//							LogEntry logEntry = LogEntry.reveal(singleMove.ticket,singleMove.destination);
-//
-//						}
-//						else {
-//							LogEntry logEntry = LogEntry.hidden(singleMove.ticket);
-//						}
 						List<LogEntry> logEntries = new ArrayList<>(log);
-						//logEntries.addAll(log);
 						logEntries.add(setLog(singleMove.ticket,singleMove.destination, logEntries.size()));
 						mrX = mrX.use(singleMove.ticket);
 						mrX = mrX.at(singleMove.destination);
 						List<Piece> remainingDetectives = getDetectivePieces();
-						System.out.println(remainingDetectives);
 						return new MyGameState(setup,
 								ImmutableSet.copyOf(remainingDetectives),
 								ImmutableList.copyOf(logEntries),
@@ -144,7 +133,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						List<Piece> remainingDetectives = new ArrayList<>(remaining);
 						remainingDetectives.remove(move.commencedBy());
 						if (remainingDetectives.isEmpty()) remainingDetectives = List.of(mrX.piece());
-						System.out.println(remainingDetectives);
 						return new MyGameState(setup,
 								ImmutableSet.copyOf(remainingDetectives),
 								log, mrX, detectives);
@@ -159,14 +147,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					mrX = mrX.use(doubleMove.ticket2);
 					mrX = mrX.at(doubleMove.destination2);
 					List<Piece> remainingDetectives = getDetectivePieces();
-					System.out.println(remainingDetectives);
 					return new MyGameState(setup,
 							ImmutableSet.copyOf(remainingDetectives),
 							ImmutableList.copyOf(logEntries),
 							mrX, detectives);
 				}
-
-
 			});
 			return nextGameState;
 		}
@@ -207,7 +192,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			Set<Move> currentMoves = new HashSet<>();
-			System.out.println(this.mrX.location());
 			if (this.remaining.contains(this.mrX.piece())) {
 				currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
 				currentMoves.addAll(makeDoubleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
@@ -217,7 +201,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 
 			}
-			System.out.println(currentMoves);
 			return ImmutableSet.copyOf(currentMoves);
 		}
 
