@@ -195,7 +195,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			Set<Move> currentMoves = new HashSet<>();
 			if (this.remaining.contains(this.mrX.piece())) {
 				currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
-				if (this.setup.moves.size() - this.log.size() >= 2){
+				if ((this.setup.moves.size() - this.log.size() >= 2) && (this.mrX.has(Ticket.DOUBLE))){
 					currentMoves.addAll(makeDoubleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
 				}
 			} else {
