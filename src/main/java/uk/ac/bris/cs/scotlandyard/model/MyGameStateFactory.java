@@ -59,6 +59,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.mrX = mrX;
 			this.detectives = detectives;
 			this.moves = getAvailableMoves();
+			this.winner = getWinner();
+			System.out.println(this.moves);
+			System.out.println(this.winner);
 		}
 		public void validMrX(Player mrX){
 			if(mrX == null) throw new NullPointerException();
@@ -185,27 +188,71 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public ImmutableList<LogEntry> getMrXTravelLog(){
+
 			return this.log;
+		}
+
+		public boolean isMrxTurn(){
+			return this.remaining.contains(this.mrX.piece());
+		}
+
+		public boolean noMovesLeft(){
+			return this.log.size()==this.setup.moves.size();
+		}
+
+		public boolean hasTickets(Player detective){
+			boolean noTickets = true;
+			for (Ticket t : Ticket.values()) {
+				if (detective.tickets().get(t) > 0){
+					noTickets = false;
+					break;
+				}
+			}
+			return !noTickets;
 		}
 		@Override
 		public ImmutableSet<Piece> getWinner(){
-			this.winner = ImmutableSet.of();
-			return this.winner;
+			boolean noPossibleMoves = true;
+			for (Player detective: this.detectives){
+				if (detective.location() == this.mrX.location()){
+					return ImmutableSet.copyOf(getDetectivePieces());
+				}
+				if (hasTickets(detective)) {
+					noPossibleMoves = false;
+				}
+			}
+			if (noPossibleMoves){
+				return ImmutableSet.of(this.mrX.piece());
+			}
+			if (noMovesLeft()){
+				return ImmutableSet.of(this.mrX.piece());
+			}
+			if (this.moves.isEmpty() && this.isMrxTurn()){
+				return ImmutableSet.copyOf(getDetectivePieces());
+			}
+			if (this.moves.isEmpty() && !this.remaining.isEmpty() && !this.isMrxTurn()){
+				return ImmutableSet.of(this.mrX.piece());
+			}
+			//TODO detective win if detective move finish on mrx or mrx can't travel
+			//TODO mrx win if mrx fills log and detectives haven't caught him or detectives cannot move
+			return ImmutableSet.of();
 		}
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			Set<Move> currentMoves = new HashSet<>();
-			if (this.remaining.contains(this.mrX.piece())) {
-				currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
-				if ((this.setup.moves.size() - this.log.size() >= 2) && (this.mrX.has(Ticket.DOUBLE))){
-					currentMoves.addAll(makeDoubleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
-				}
-			} else {
-				for (Player detective : this.detectives) {
-					if (this.remaining.contains(detective.piece())) currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, detective, detective.location()));
-				}
+			if (this.winner == null || this.winner.isEmpty())
+				if (this.isMrxTurn() && !this.noMovesLeft()) {
+					currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
+					if ((this.setup.moves.size() - this.log.size() >= 2) && (this.mrX.has(Ticket.DOUBLE))) {
+						currentMoves.addAll(makeDoubleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
+					}
+				} else {
+					for (Player detective : this.detectives) {
+						if (this.remaining.contains(detective.piece()))
+							currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, detective, detective.location()));
+					}
 
-			}
+				}
 			return ImmutableSet.copyOf(currentMoves);
 		}
 
