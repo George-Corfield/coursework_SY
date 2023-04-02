@@ -60,8 +60,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.detectives = detectives;
 			this.moves = getAvailableMoves();
 			this.winner = getWinner();
-			System.out.println(this.moves);
-			System.out.println(this.winner);
+//			System.out.println(this.moves);
+//			System.out.println(this.remaining);
+//			System.out.println(this.winner);
 		}
 		public void validMrX(Player mrX){
 			if(mrX == null) throw new NullPointerException();
@@ -137,7 +138,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						mrX = mrX.give(singleMove.ticket);
 						List<Piece> remainingDetectives = new ArrayList<>(remaining);
 						remainingDetectives.remove(move.commencedBy());
-						if (remainingDetectives.isEmpty()) remainingDetectives = List.of(mrX.piece());
+						remaining = ImmutableSet.copyOf(remainingDetectives);
+						if (remainingDetectives.isEmpty() || getAvailableMoves().isEmpty()) remainingDetectives = List.of(mrX.piece());
 						return new MyGameState(setup,
 								ImmutableSet.copyOf(remainingDetectives),
 								log, mrX, newDetectives);
@@ -263,6 +265,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				for (Player detective : detectives){
 					if (detective.location()==destination){
 						occupied = true;
+						break;
 					}
 				}
 				if (!occupied){
