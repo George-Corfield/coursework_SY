@@ -31,7 +31,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.player = player;
 		}
 		public int getCount(Ticket ticket){
-			return this.player.tickets().get(ticket);
+			return player.tickets().get(ticket);
 		}
 	}
 
@@ -60,9 +60,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.detectives = detectives;
 			this.moves = getAvailableMoves();
 			this.winner = getWinner();
-//			System.out.println(this.moves);
-//			System.out.println(this.remaining);
-//			System.out.println(this.winner);
 		}
 		public void validMrX(Player mrX){
 			if(mrX == null) throw new NullPointerException();
@@ -90,13 +87,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public GameSetup getSetup(){
-			return this.setup;
+			return setup;
 		}
 		@Override
 		public ImmutableSet<Piece> getPlayers(){
 			List<Piece> pieces = new ArrayList<>();
-			pieces.add(this.mrX.piece());
-			for (Player detective : this.detectives){
+			pieces.add(mrX.piece());
+			for (Player detective : detectives){
 				pieces.add(detective.piece());
 			}
 			return ImmutableSet.copyOf(pieces);
@@ -104,7 +101,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		public List<Piece> getDetectivePieces(){
 			List<Piece> detectivePieces = new ArrayList<>();
-			for (Player player:this.detectives){
+			for (Player player:detectives){
 				detectivePieces.add(player.piece());
 			}
 			return detectivePieces;
@@ -165,7 +162,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public Optional<Integer> getDetectiveLocation(Detective detective){
-			for(Player player : this.detectives){
+			for(Player player : detectives){
 				if (player.piece() == detective){
 					return Optional.of(player.location());
 				}
@@ -174,14 +171,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 		@Override
 		public Optional<TicketBoard> getPlayerTickets(Piece piece){
-			if (this.getPlayers().contains(piece)){
-				if (piece == this.mrX.piece()) {
-					return Optional.of(new MyGameStateFactory.TicketBoard(this.mrX)); // what is ticketBoard
+			if (getPlayers().contains(piece)){
+				if (piece == mrX.piece()) {
+					return Optional.of(new MyGameStateFactory.TicketBoard(mrX)); // what is ticketBoard
 				}
 				else {
-					for (int i = 0; i < this.detectives.size(); i++) {
-						if (piece == this.detectives.get(i).piece()) {
-							return Optional.of(new MyGameStateFactory.TicketBoard(this.detectives.get(i)));
+					for (int i = 0; i < detectives.size(); i++) {
+						if (piece == detectives.get(i).piece()) {
+							return Optional.of(new MyGameStateFactory.TicketBoard(detectives.get(i)));
 						}
 					}
 				}
@@ -191,15 +188,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableList<LogEntry> getMrXTravelLog(){
 
-			return this.log;
+			return log;
 		}
 
 		public boolean isMrxTurn(){
-			return this.remaining.contains(this.mrX.piece());
+			return remaining.contains(mrX.piece());
 		}
 
 		public boolean noMovesLeft(){
-			return this.log.size()==this.setup.moves.size();
+			return log.size()==setup.moves.size();
 		}
 
 		public boolean hasTickets(Player detective){
@@ -215,8 +212,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableSet<Piece> getWinner(){
 			boolean noPossibleMoves = true;
-			for (Player detective: this.detectives){
-				if (detective.location() == this.mrX.location()){
+			for (Player detective: detectives){
+				if (detective.location() == mrX.location()){
 					return ImmutableSet.copyOf(getDetectivePieces());
 				}
 				if (hasTickets(detective)) {
@@ -224,34 +221,32 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 			if (noPossibleMoves){
-				return ImmutableSet.of(this.mrX.piece());
+				return ImmutableSet.of(mrX.piece());
 			}
 			if (noMovesLeft()){
-				return ImmutableSet.of(this.mrX.piece());
+				return ImmutableSet.of(mrX.piece());
 			}
-			if (this.moves.isEmpty() && this.isMrxTurn()){
+			if (moves.isEmpty() && isMrxTurn()){
 				return ImmutableSet.copyOf(getDetectivePieces());
 			}
-			if (this.moves.isEmpty() && !this.remaining.isEmpty() && !this.isMrxTurn()){
-				return ImmutableSet.of(this.mrX.piece());
+			if (moves.isEmpty() && !remaining.isEmpty() && !isMrxTurn()){
+				return ImmutableSet.of(mrX.piece());
 			}
-			//TODO detective win if detective move finish on mrx or mrx can't travel
-			//TODO mrx win if mrx fills log and detectives haven't caught him or detectives cannot move
 			return ImmutableSet.of();
 		}
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			Set<Move> currentMoves = new HashSet<>();
-			if (this.winner == null || this.winner.isEmpty())
-				if (this.isMrxTurn() && !this.noMovesLeft()) {
-					currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
-					if ((this.setup.moves.size() - this.log.size() >= 2) && (this.mrX.has(Ticket.DOUBLE))) {
-						currentMoves.addAll(makeDoubleMoves(this.setup, this.detectives, this.mrX, this.mrX.location()));
+			if (winner == null || winner.isEmpty())
+				if (isMrxTurn() && !noMovesLeft()) {
+					currentMoves.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+					if ((setup.moves.size() - log.size() >= 2) && (mrX.has(Ticket.DOUBLE))) {
+						currentMoves.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 					}
 				} else {
-					for (Player detective : this.detectives) {
-						if (this.remaining.contains(detective.piece()))
-							currentMoves.addAll(makeSingleMoves(this.setup, this.detectives, detective, detective.location()));
+					for (Player detective : detectives) {
+						if (remaining.contains(detective.piece()))
+							currentMoves.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
 					}
 
 				}

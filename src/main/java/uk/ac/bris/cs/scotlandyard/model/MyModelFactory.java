@@ -19,7 +19,6 @@ public final class MyModelFactory implements Factory<Model> {
 	@Nonnull @Override public Model build(GameSetup setup,
 	                                      Player mrX,
 	                                      ImmutableList<Player> detectives) {
-		// TODO
 		return new Model() {
 			public Board.GameState gameState = new MyGameStateFactory().build(setup,mrX,detectives);
 			public ImmutableList<Observer> observers = ImmutableList.of();
